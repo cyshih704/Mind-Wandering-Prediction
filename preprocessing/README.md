@@ -1,7 +1,9 @@
 ## To synchronize data
+Processing raw data to csv file and do the synchronization
 ```
 python3 merge_EEG_trigger.py
 ```
+The subject id whose data can't be used: 11, 13, 22, 27, 36, 72
 
 ## Preprocessing EEG 
 ### Re-reference -> bandpass filter -> ICA -> Save to npy
