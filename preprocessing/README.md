@@ -3,6 +3,16 @@ Processing raw data to csv file and do the synchronization
 ```
 python3 merge_EEG_trigger.py
 ```
+The output csv file is be like as follows
+
+|TIMESTAMP|FP1|FP2|...|HEO|VEO|trigger|Rating|Rating_RT|Thought|
+|:----:|:----:|:----:|:----:|:----:|:----:|:----:|:----:|:----:|:----:|
+| time stamp 1|...|...|...|...|...|...|...|...|...|
+| time stamp 2|...|...|...|...|...|...|...|...|...|
+| time stamp 3|...|...|...|...|...|...|...|...|...|
+
+
+
 The subject id whose data can't be used: 11, 13, 22, 27, 36, 72
 
 ## Preprocessing EEG 
