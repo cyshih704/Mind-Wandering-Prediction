@@ -25,14 +25,14 @@ The output rest csv file is be like as follows
 The subject id whose data can't be used: 11, 13, 22, 27, 36, 72
 
 ## Preprocessing of EEG 
-### Re-reference -> bandpass filter -> ICA (optional) -> Save to npz file
+### Re-reference -> Bandpass filter -> ICA eye artifact rejection (optional) -> Save to npz file
 ```
 python3 csv_to_npy.py
 ```
 * main
- * Save the npz file with keys (eeg, thought, response_time, rating, trigger)
+  * Save the npz file with keys (eeg, thought, response_time, rating, trigger)
 * rest
- * Save the npz file with keys (open_eeg, close_eeg)
+  * Save the npz file with keys (open_eeg, close_eeg)
 
 ## Merge each subject data into one file
 * Variable: probe
