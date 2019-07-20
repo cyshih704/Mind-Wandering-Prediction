@@ -1,10 +1,14 @@
-import pandas as pd
-import sys
+"""
+    Processing raw data to csv file and do the synchronization
+"""
+
 import os
+
+import pandas as pd
 from tqdm import tqdm
 
 FORMAL_DATA_PATH = '/mnt/SART_Paper/Formal_data'
-USER_DATA_PATH = '/mnt/SART_Paper/user_eeg'
+USER_CSV_PATH = '/mnt/SART_Paper/user_eeg_csv'
 
 
 def parse_data(eeg_text):
@@ -102,7 +106,7 @@ if __name__ == "__main__":
 
     for i, file_path in tqdm(enumerate(file_path_list)):
         data_path = file_path
-        if i == 69:
+        try:
             path = data_path.split('/')
             user_name = path[-1]
             user_id = user_name.split('_')[0]
@@ -117,7 +121,7 @@ if __name__ == "__main__":
             # pre
             EEG_txt = os.path.join(data_path, user_name+"_eegoutput_prerest."+EEG_format)
             trigger_csv = os.path.join(data_path, user_name+"_eegtrigger_prerest."+trigger_format)
-            EEG_csv = os.path.join(USER_DATA_PATH, 'pre', "user"+user_id+"_pre_EEG."+output_format)
+            EEG_csv = os.path.join(USER_CSV_PATH, 'pre', "user"+user_id+"_pre_EEG."+output_format)
 
             #print("Processing EEG's Pre")
             EEG = parse_data(EEG_txt)
@@ -126,7 +130,7 @@ if __name__ == "__main__":
             # post
             EEG_txt = os.path.join(data_path, user_name+"_eegoutput_postrest."+EEG_format)
             trigger_csv = os.path.join(data_path, user_name+"_eegtrigger_postrest."+trigger_format)
-            EEG_csv = os.path.join(USER_DATA_PATH, 'post', "user"+user_id+"_post_EEG."+output_format)
+            EEG_csv = os.path.join(USER_CSV_PATH, 'post', "user"+user_id+"_post_EEG."+output_format)
 
             #print("Processing EEG's Post")
             EEG = parse_data(EEG_txt)
@@ -135,11 +139,11 @@ if __name__ == "__main__":
             # main
             EEG_txt = os.path.join(data_path, user_name+"_eegoutput_main."+EEG_format)
             trigger_csv = os.path.join(data_path, user_name+"_eegtrigger_main."+trigger_format)
-            EEG_csv = os.path.join(USER_DATA_PATH, 'main', "user"+user_id+"_main_EEG."+output_format)
+            EEG_csv = os.path.join(USER_CSV_PATH, 'main', "user"+user_id+"_main_EEG."+output_format)
             EPRIME_txt = os.path.join(data_path, user_name+"_eprime_mainoutput."+EPRIME_format)
 
             #print("Processing EEG's Main")
             EEG = parse_data(EEG_txt)
             merge_trigger(EEG, trigger_csv, EEG_csv, EPRIME_txt, main=True)
-
+        except:
             print(data_path)
