@@ -3,7 +3,7 @@ Processing raw data to csv file and do the synchronization
 ```
 python3 merge_EEG_trigger.py
 ```
-The output csv file is be like as follows
+The output main csv file is be like as follows
 
 |TIMESTAMP|FP1|FP2|...|HEO|VEO|trigger|Rating|Rating_RT|Thought|
 |:----:|:----:|:----:|:----:|:----:|:----:|:----:|:----:|:----:|:----:|
@@ -12,26 +12,27 @@ The output csv file is be like as follows
 | time stamp 3|...|...|...|...|...|...|...|...|...|
 
 
+The output rest csv file is be like as follows
+
+|TIMESTAMP|FP1|FP2|...|HEO|VEO|trigger|
+|:----:|:----:|:----:|:----:|:----:|:----:|:----:|
+| time stamp 1|...|...|...|...|...|...|
+| time stamp 2|...|...|...|...|...|...|
+| time stamp 3|...|...|...|...|...|...|
+
+
 
 The subject id whose data can't be used: 11, 13, 22, 27, 36, 72
 
-## Preprocessing EEG 
-### Re-reference -> bandpass filter -> ICA -> Save to npy
-* If using ICA
-  * Change variable **EEG_TYPE** to 'Clean'
-  * You have to check the index of the eye component manually and then remove it. 
-    * The default removed index is 0, but the eye component index is depeents on subject 
-  * ***How to check the index of IC component:*** open the image ***npy/ica/main_fig/ic_comp_id.png***
-
-* If not using ICA
- * Change variable **EEG_TYPE** to 'Dirty'
-
-* Variable **id_list**: the subjects that you want to process 
-
-* Only support **mode == 'main'**, have to modify the code when **mode == 'pre' or mode == 'post'**
+## Preprocessing of EEG 
+### Re-reference -> bandpass filter -> ICA (optional) -> Save to npz file
 ```
 python3 csv_to_npy.py
 ```
+* main
+ * Save the npz file with keys (eeg, thought, response_time, rating, trigger)
+* rest
+ * Save the npz file with keys (open_eeg, close_eeg)
 
 ## Merge each subject data into one file
 * Variable: probe
@@ -47,5 +48,4 @@ python3 csv_to_npy.py
 ```
 python3 seg_data.py
 ```
-
 
