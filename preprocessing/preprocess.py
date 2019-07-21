@@ -125,7 +125,6 @@ def ica_remove_eye_artifact(eeg, saved_file_name):
 
     # remove IC component, you have to check where the IC component is, it is not always at index 0
     if saved_file_name in ICA_EXCLUDED_COMPONENTS:
-        print(saved_file_name, ICA_EXCLUDED_COMPONENTS[saved_file_name])
         raw_corrected = ica.apply(raw_corrected, exclude=[ICA_EXCLUDED_COMPONENTS[saved_file_name]])
     else:
         raw_corrected = ica.apply(raw_corrected, exclude=[0])
@@ -141,7 +140,10 @@ def preprocess_and_save(mode):
     Preprocessing: re-reference -> bandpass filter -> ICA (optional)
 
     Args:
-        mode: str (post, pre or main)
+        mode: str
+            'main': the recording of the main experiment
+            'pre': the recording of pre resting
+            'post': the recording of post resting
     """
     file_dir = os.path.join(USER_CSV_PATH, mode)
     file_names = sorted(os.listdir(file_dir))
