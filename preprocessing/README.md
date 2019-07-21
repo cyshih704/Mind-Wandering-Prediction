@@ -33,7 +33,6 @@ python3 preprocess.py
   * Need to check the IC component index of eye blinking
 * **mode**
   * **main**: Save the npz file with keys (eeg, thought, response_time, rating, trigger)
-* rest
   * **pre** or **post**: Save the npz file with keys (open_eeg, close_eeg)
 
 ## Merge each subject data into one file
