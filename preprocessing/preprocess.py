@@ -134,7 +134,7 @@ def ica_remove_eye_artifact(eeg, saved_file_name):
     return ret
 
 
-def csv_to_npz(mode):
+def preprocess_and_save(mode):
     """Processed raw csv file to npz format, and do the preprocessing,
     read the file from USER_CSV_PATH and save to USER_NPZ_PATH
 
@@ -217,9 +217,9 @@ def main():
     """
     assert PREPROCESSING == True
 
-    csv_to_npz('main')
-    csv_to_npz('post')
-    csv_to_npz('pre')
+    preprocess_and_save('main')
+    preprocess_and_save('post')
+    preprocess_and_save('pre')
 
 
 if __name__ == '__main__':
