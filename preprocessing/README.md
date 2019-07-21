@@ -1,7 +1,7 @@
 ## To synchronize data
 Processing raw data to csv file and do the synchronization
 ```
-python3 merge_EEG_trigger.py
+python3 synchronize.py
 ```
 The output main csv file is be like as follows
 
@@ -27,12 +27,13 @@ The subject id whose data can't be used: 11, 13, 22, 27, 36, 72
 ## Preprocessing of EEG 
 ### Re-reference -> Bandpass filter -> ICA eye artifact rejection (optional) -> Save to npz file
 ```
-python3 csv_to_npy.py
+python3 preprocess.py
 ```
-* main
-  * Save the npz file with keys (eeg, thought, response_time, rating, trigger)
-* rest
-  * Save the npz file with keys (open_eeg, close_eeg)
+* If using ICA
+  * Need to check the IC component index of eye blinking
+* **mode**
+  * **main**: Save the npz file with keys (eeg, thought, response_time, rating, trigger)
+  * **pre** or **post**: Save the npz file with keys (open_eeg, close_eeg)
 
 ## Merge each subject data into one file
 * Variable: probe
