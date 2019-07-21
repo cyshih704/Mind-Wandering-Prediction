@@ -29,10 +29,12 @@ The subject id whose data can't be used: 11, 13, 22, 27, 36, 72
 ```
 python3 preprocess.py
 ```
-* main
-  * Save the npz file with keys (eeg, thought, response_time, rating, trigger)
+* If using ICA
+  * Need to check the IC component index of eye blinking
+* **mode**
+  * **main**: Save the npz file with keys (eeg, thought, response_time, rating, trigger)
 * rest
-  * Save the npz file with keys (open_eeg, close_eeg)
+  * **pre** or **post**: Save the npz file with keys (open_eeg, close_eeg)
 
 ## Merge each subject data into one file
 * Variable: probe
