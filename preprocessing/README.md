@@ -11,6 +11,13 @@ The output main csv file is be like as follows
 | time stamp 2|...|...|...|...|...|...|...|...|...|
 | time stamp 3|...|...|...|...|...|...|...|...|...|
 
+* Type of **thought**
+  * normal
+  * probe
+  * response
+  * target
+* When the type of **thought** == target, the **response time, rating and trigger** will have value
+
 
 The output rest csv file is be like as follows
 
@@ -19,7 +26,6 @@ The output rest csv file is be like as follows
 | time stamp 1|...|...|...|...|...|...|
 | time stamp 2|...|...|...|...|...|...|
 | time stamp 3|...|...|...|...|...|...|
-
 
 
 The subject id whose data can't be used: 11, 13, 22, 27, 36, 72
