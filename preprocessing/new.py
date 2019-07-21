@@ -2,6 +2,7 @@
     Save the data to npz format, and can be used for others
 """
 import os
+import sys
 
 import numpy as np
 import pandas as pd
@@ -11,11 +12,11 @@ import matplotlib.pyplot as plt
 import mne
 from scipy.signal import butter, lfilter
 
-USER_CSV_PATH = '/mnt/SART_Paper/user_eeg_csv'
-USER_NPZ_PATH = '/mnt/SART_Paper/user_preprocessed_eeg_npz'
+USER_CSV_PATH = '/mnt/SART_Paper/user_eeg_csv'  # reading raw csv file
+USER_NPZ_PATH = '/mnt/SART_Paper/user_preprocessed_eeg_npz'  # save processed file
 
 PREPROCESSING = True
-ICA = False
+ICA = True
 
 # Channel list with M2 channel
 CHANNEL_LIST_WITH_M2 = np.array(['FP1', 'FP2', 'F7', 'F3', 'FZ', 'F4', 'F8',
@@ -30,6 +31,14 @@ CHANNEL_LIST = ['FP1', 'FP2', 'F7', 'F3', 'FZ', 'F4', 'F8',
                 'C3', 'CZ', 'C4', 'T8', 'TP7', 'CP3',
                 'CPZ', 'CP4', 'TP8', 'P7', 'P3', 'PZ', 'P4',
                 'P8', 'O1', 'OZ', 'O2', 'HEO', 'VEO']
+
+# The eye component's index in each mode_subject (which is non-zero)
+ICA_EXCLUDED_COMPONENTS = dict(main_26=1, main_47=1, post_03=1, post_10=1,
+                               post_15=1, post_23=1, post_24=1, post_28=1,
+                               post_29=3, post_30=3, post_33=8, post_43=1,
+                               post_47=1, post_50=1, post_54=4, post_57=1,
+                               post_65=2, post_70=2, pre_24=2, pre_33=2,
+                               pre_49=1, pre_54=14, pre_65=1, pre_72=1)
 
 
 def bandpass(eeg, fs=1000.0, lowcut=0.1, highcut=45.0):
@@ -115,13 +124,19 @@ def ica_remove_eye_artifact(eeg, saved_file_name):
     raw_corrected = raw.copy()
 
     # remove IC component, you have to check where the IC component is, it is not always at index 0
-    raw_corrected = ica.apply(raw_corrected, exclude=[0])
+    if saved_file_name in ICA_EXCLUDED_COMPONENTS:
+        print(saved_file_name, ICA_EXCLUDED_COMPONENTS[saved_file_name])
+        raw_corrected = ica.apply(raw_corrected, exclude=[ICA_EXCLUDED_COMPONENTS[saved_file_name]])
+    else:
+        raw_corrected = ica.apply(raw_corrected, exclude=[0])
+    ret = raw_corrected.get_data()
 
-    return raw_corrected.get_data()
+    return ret
 
 
 def csv_to_npz(mode):
-    """Processed raw csv file to npz format, and do the preprocessing
+    """Processed raw csv file to npz format, and do the preprocessing,
+    read the file from USER_CSV_PATH and save to USER_NPZ_PATH
 
     Preprocessing: re-reference -> bandpass filter -> ICA (optional)
 
@@ -133,6 +148,13 @@ def csv_to_npz(mode):
 
     for fn in tqdm(file_names):
         user_id = fn[4:6]
+
+        if int(user_id) != int(sys.argv[1]):
+            continue
+        saved_file_name = '{}_{}'.format(mode, user_id)
+        if saved_file_name not in ICA_EXCLUDED_COMPONENTS:
+            continue
+
         file_path = os.path.join(file_dir, fn)
         df = pd.read_csv(file_path, sep=',', low_memory=False)
         eeg = df.values  # time stamps x 38 (1 time stamp + 33 channels + 4 labels)
