@@ -151,11 +151,11 @@ def preprocess_and_save(mode):
     for fn in tqdm(file_names):
         user_id = fn[4:6]
 
-        if int(user_id) != int(sys.argv[1]):
-            continue
-        saved_file_name = '{}_{}'.format(mode, user_id)
-        if saved_file_name not in ICA_EXCLUDED_COMPONENTS:
-            continue
+        # if int(user_id) != int(sys.argv[1]):
+        #    continue
+        #saved_file_name = '{}_{}'.format(mode, user_id)
+        # if saved_file_name not in ICA_EXCLUDED_COMPONENTS:
+        #    continue
 
         file_path = os.path.join(file_dir, fn)
         df = pd.read_csv(file_path, sep=',', low_memory=False)
@@ -164,7 +164,7 @@ def preprocess_and_save(mode):
         if mode == 'main':
             thought, response_time, rating, trigger = eeg[:, -1], eeg[:, -2], eeg[:, -3], eeg[:, -4]
             """
-                thought: normal, probe, response, target
+                thought: normal, probe, response, target, target_response
                 when thought == target, the response time, rating and trigger will have value
             """
             eeg = np.delete(eeg, [0, 34, 35, 36, 37], axis=1)  # remove time stamp and 4 labels
