@@ -53,6 +53,6 @@ python3 preprocess.py
 * Variable ls
   * Length of each segment (default 10 seconds)
 ```
-python3 seg_data.py
+python3 epoch.py
 ```
 
