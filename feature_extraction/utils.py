@@ -5,13 +5,22 @@ import numpy as np
 FEATURE_PATH = '/home/access/cys/SART_Paper/feature_npz'  # saved feature path
 
 
-def freq_domain_extract(x, sub_dir: str, feature_name: str, function, extract_type=None):
-    """Do the frequency domain feature extraction
+def extract_one_feature_and_save(x, sub_dir: str, feature_name: str, function, extract_type=None):
+    """Extract one feature and save it to the file
 
     Args:
-        x: eeg (shape: # people x # trials x # channels x # samples)
+        :param x: x.shape: [# people x # trials x # channels x # samples]
+        :param sub_dir: the sub directory of the path of saved feature
+        :param feature_name: the saved feature name
+        :param function: the feature extract function
+        :extract type: be used to saved feature log
+            freq_band: feature extraction on 4 frequency band (4 bands)
+            wavelet_comp: feature extraction on each wavelet components (5 components)
+            entropy: feature extraction on different entropy scale (20 scales)
+            wavelet_entropy: feature extraction on different entropy scale and components (20 scales * 5 components)
     """
 
+    # if not have directory to save feature, create it
     saved_dir = os.path.join(FEATURE_PATH, sub_dir)
     if not os.path.exists(os.path.join(saved_dir)):
         os.makedirs(os.path.join(saved_dir))
@@ -20,11 +29,11 @@ def freq_domain_extract(x, sub_dir: str, feature_name: str, function, extract_ty
 
     if os.path.isfile(saved_file_path+'.npz'):  # if already extract the feature, load directly
         print('    Loading [{}] from [{}]'.format(feature_name, sub_dir))
-
         data = np.load(saved_file_path+'.npz')
         x = data['x']
         log = data['log']
-    else:
+
+    else:  # if not extract the feature, extract it
         print('    Extracting [{}] on [{}]'.format(feature_name, sub_dir))
 
         pbar = tqdm(range(len(x)))
@@ -35,7 +44,7 @@ def freq_domain_extract(x, sub_dir: str, feature_name: str, function, extract_ty
                 x_channel = []
                 for channel in range(len(x[subject][trial])):
                     x_in = x[subject][trial][channel]
-                    if extract_type == 'on_4_bands':
+                    if extract_type == 'freq_band':
                         feature, log = freq_domain(x_in, function, feature_name)
                     elif extract_type == 'wavelet_comp':
                         feature, log = wavelet_domain(x_in, function, feature_name)
@@ -55,14 +64,15 @@ def freq_domain_extract(x, sub_dir: str, feature_name: str, function, extract_ty
             # if subject == 0:
             #    break
 
-        x_subject = np.array(x_subject)
+        x = np.array(x_subject)
         log = np.array(log)
-        assert x_subject.shape[3] == len(log)
+        assert x.shape[3] == len(log)
 
-        np.savez(saved_file_path, x=x_subject, log=np.array(log))
+        np.savez(saved_file_path, x=x, log=np.array(log))
         print('         Save to {}'.format(saved_file_path))
-        print('         feature_dim: {}'.format(x_subject.shape))
+        print('         feature_dim: {}'.format(x.shape))
         print('         feature_log: {}'.format(log))
+    return x, log
 
 
 def freq_domain(x, function, feature_name):
@@ -101,7 +111,7 @@ def wavelet_domain(x, function, feature_name):
     return feature, log
 
 
-def wavelet_entropy_domain(x, function, feature_name):
+def entropy_domain(x, function, feature_name):
     feature = function(x)
     log = ['{}-{}'.format(feature_name, i+1) for i in range(len(feature))]
     return feature, log
@@ -117,3 +127,25 @@ def wavelet_entropy_domain(x, function, feature_name):
             log.append('{}-{}-{}'.format(feature_name, comp, i+1))
 
     return feature, log
+
+
+'''
+def convert_to_binary_label(y, label_type):
+    """convert label to binary
+
+    Args:
+        y: # people x # trials
+        label_type: {'rating', 'thought', 'withhold'}
+    Returns:
+        binary y: # people x # trials
+    """
+    assert label_type in {'rating', 'thought', 'withhold'}
+
+    if label_type == 'rating':
+        y
+        print(y > 4)
+    elif label_type == 'thought':
+        raise NotImplementedError("Not implement convert thought to binary label yet")
+    else:
+        return y
+'''
