@@ -1,4 +1,6 @@
 import numpy as np
+from xgboost import XGBClassifier
+from sklearn.metrics import confusion_matrix
 
 
 CHANNEL_LIST = np.array(['FP1', 'FP2', 'F7', 'F3', 'FZ', 'F4', 'F8',
@@ -74,3 +76,101 @@ def specify_channels(x, log, sel_ch):
     assert x.shape[2] == len(log_channel)
 
     return x, np.array(log_channel)
+
+
+def normalize(x):
+    """Normalize the features of each subject
+
+    Args:
+        :param x: # people x # trials x (# channels x # features)
+    Return:
+        normalized features
+    """
+    x_norm = []
+    for subject in range(len(x)):
+        x_subject_t = np.transpose(x[subject])  # num_feature x trial
+        tmp = [(feature-np.mean(feature))/np.std(feature) for feature in x_subject_t]
+        x_norm.append(np.transpose(np.array(tmp)))
+    return np.array(x_norm)
+
+
+def leave_one_subject_out(x, y, log, label_type):
+    """Normalization and Leave one subject out cross validation
+
+    Args:
+        :param x: # people x # trials x (# channels x # features)
+        :param y: # people x # trials
+        :param log: (# channels x # features)
+    """
+    x = normalize(x)
+
+    clf = XGBClassifier(n_estimators=300,
+                        learning_rate=0.05,
+                        max_depth=3,
+                        min_child_weight=2,
+                        gamma=0,
+                        subsample=0.8,
+                        colsample_bytree=0.8,
+                        scale_pos_weight=1,
+                        reg_alpha=1,
+                        )
+    precision_list, recall_list, f1_list = list(), list(), list()
+    for subject in range(len(x)):
+        x_train, y_train = np.delete(x, subject, axis=0), np.delete(y, subject, axis=0)
+        x_test, y_test = x[subject], y[subject]
+
+        # reshape x and y, and convert label to binary and remove threshold
+        x_train, y_train = convert_to_binary_label_and_remove_threshold(
+            x_train.reshape(-1, x.shape[2]), y_train.reshape(-1), label_type)
+        x_test, y_test = convert_to_binary_label_and_remove_threshold(
+            x_test.reshape(-1, x.shape[2]), y_test.reshape(-1), label_type)
+
+        clf.fit(x_train, y_train)
+        y_pred = clf.predict(x_test)
+
+        tn, fp, fn, tp = confusion_matrix(y_test, y_pred).ravel()
+        """
+            [[tn fp
+              fn tp]]
+        """
+        precision = tp / (tp + fp)
+        recall = tp / (tp + fn)
+        f1 = 2 * (precision * recall) / (precision + recall)
+
+        print('Test on subject {}: Precision->{:.2f}, Recall->{:.2f}, F1->{:.2f}'.format(subject+1, precision, recall, f1))
+
+        precision_list.append(precision)
+        recall_list.append(recall)
+        f1_list.append(f1)
+    print('---------------------------')
+    print('Average: Precision->{:.2f}, Recall->{:.2f}, F1->{:.2f}'.format(np.mean(precision_list),
+                                                                          np.mean(recall_list), np.mean(f1_list)))
+
+
+def leave_one_trial_out(x, y, log, label_type):
+    pass
+
+
+def convert_to_binary_label_and_remove_threshold(x, y, label_type):
+    """convert label to binary, and remove threshold (4 in rating)
+
+    Args:
+        x: trials x features
+        y: trials
+    Returns:
+        x: trials x features (remove threshold)
+        y: trials (binary, and remove threshold)
+    """
+    assert label_type in {'rating', 'thought', 'withhold'}
+
+    if label_type == 'rating':
+        idx_4 = np.where(y == 4)[0]
+        y[y < 4] = 0
+        y[y > 4] = 1
+        x = np.delete(x, idx_4, axis=0)
+        y = np.delete(y, idx_4, axis=0)
+    elif label_type == 'thought':
+        raise NotImplementedError('Not implement convert_to_binary_label_and_remove_threshold of thought')
+    else:
+        pass
+    return x, y
