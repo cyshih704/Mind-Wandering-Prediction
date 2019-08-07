@@ -3,6 +3,7 @@ from xgboost import XGBClassifier
 from sklearn.metrics import confusion_matrix, roc_curve, auc
 import matplotlib.pyplot as plt
 from scipy import interp
+from sklearn.utils import shuffle
 
 CHANNEL_LIST = np.array(['FP1', 'FP2', 'F7', 'F3', 'FZ', 'F4', 'F8',
                          'FT7', 'FC3', 'FCZ', 'FC4', 'FT8', 'T7',
@@ -148,11 +149,13 @@ def leave_one_subject_out(x, y, log, label_type):
         recall = tp / (tp + fn)
         f1 = 2 * (precision * recall) / (precision + recall)
 
-        print('Test on subject {}: Precision->{:.2f}, Recall->{:.2f}, F1->{:.2f}'.format(subject+1, precision, recall, f1))
-
+        # used to calculate mean precision, recall, f1 score
         precision_list.append(precision)
         recall_list.append(recall)
         f1_list.append(f1)
+
+        print('Test on subject {}: Precision->{:.2f}, Recall->{:.2f}, F1->{:.2f}'.format(subject+1, precision, recall, f1))
+
     print('---------------------------')
     print('Average: Precision->{:.2f}, Recall->{:.2f}, F1->{:.2f}'.format(np.mean(precision_list),
                                                                           np.mean(recall_list), np.mean(f1_list)))
@@ -169,16 +172,6 @@ def leave_one_subject_out(x, y, log, label_type):
     plt.plot([0, 1], [0, 1], linestyle='--', lw=2, color='r', alpha=.8)  # plot chance level ROC
 
     plt.show()
-
-
-def leave_one_trial_out(x, y, log, label_type):
-    """Normalization and Leave one subject out cross validation
-
-    Args:
-        :param x: # people x # trials x (# channels x # features)
-        :param y: # people x # trials
-        :param log: (# channels x # features)
-    """
 
 
 def convert_to_binary_label_and_remove_threshold(x, y, label_type):
@@ -204,3 +197,60 @@ def convert_to_binary_label_and_remove_threshold(x, y, label_type):
     else:
         pass
     return x, y
+
+
+def leave_one_trial_out(x, y, log, label_type, num_fold=15, seed=0):
+    """Normalization and Leave one subject out cross validation
+
+    Args:
+        :param x: # people x # trials x (# channels x # features)
+        :param y: # people x # trials
+        :param log: (# channels x # features)
+    """
+    #x = normalize(x)
+
+    x = x.reshape(x.shape[0] * x.shape[1], -1)
+    y = y.reshape(y.shape[0] * y.shape[1])
+
+    x, y = convert_to_binary_label_and_remove_threshold(x, y, label_type=label_type)
+    x, y = shuffle(x, y, random_state=seed)
+
+    clf = XGBClassifier(n_estimators=300,
+                        learning_rate=0.05,
+                        max_depth=3,
+                        min_child_weight=2,
+                        gamma=0,
+                        subsample=0.8,
+                        colsample_bytree=0.8,
+                        scale_pos_weight=1,
+                        reg_alpha=1,
+                        )
+
+    test_fold_len = len(y) // num_fold
+    precision_list, recall_list, f1_list = list(), list(), list()
+
+    for fold in range(num_fold):
+        # x.shape: # data x # features, y.shape: # data
+        start_idx, end_idx = test_fold_len * fold, test_fold_len * (fold + 1)  # start and end idx of testing fold
+        x_train, x_test = np.delete(x, np.arange(start_idx, end_idx, 1), axis=0), x[np.arange(start_idx, end_idx, 1)]
+        y_train, y_test = np.delete(y, np.arange(start_idx, end_idx, 1), axis=0), y[np.arange(start_idx, end_idx, 1)]
+
+        # train and predict
+        clf.fit(x_train, y_train)
+        y_pred = clf.predict(x_test)
+
+        # confusion matrix
+        tn, fp, fn, tp = confusion_matrix(y_test, y_pred).ravel()
+        precision = tp / (tp + fp)
+        recall = tp / (tp + fn)
+        f1 = 2 * (precision * recall) / (precision + recall)
+
+        # used to calculate mean precision, recall, f1 score
+        precision_list.append(precision)
+        recall_list.append(recall)
+        f1_list.append(f1)
+
+        print('Test on fold {}: Precision->{:.2f}, Recall->{:.2f}, F1->{:.2f}'.format(fold+1, precision, recall, f1))
+    print('---------------------------')
+    print('Average: Precision->{:.2f}, Recall->{:.2f}, F1->{:.2f}'.format(np.mean(precision_list),
+                                                                          np.mean(recall_list), np.mean(f1_list)))
