@@ -1,7 +1,8 @@
 import numpy as np
 from xgboost import XGBClassifier
-from sklearn.metrics import confusion_matrix
-
+from sklearn.metrics import confusion_matrix, roc_curve, auc
+import matplotlib.pyplot as plt
+from scipy import interp
 
 CHANNEL_LIST = np.array(['FP1', 'FP2', 'F7', 'F3', 'FZ', 'F4', 'F8',
                          'FT7', 'FC3', 'FCZ', 'FC4', 'FT8', 'T7',
@@ -115,6 +116,7 @@ def leave_one_subject_out(x, y, log, label_type):
                         reg_alpha=1,
                         )
     precision_list, recall_list, f1_list = list(), list(), list()
+    tprs, aucs, mean_fpr = [], [], np.linspace(0, 1, 100)
     for subject in range(len(x)):
         x_train, y_train = np.delete(x, subject, axis=0), np.delete(y, subject, axis=0)
         x_test, y_test = x[subject], y[subject]
@@ -125,14 +127,23 @@ def leave_one_subject_out(x, y, log, label_type):
         x_test, y_test = convert_to_binary_label_and_remove_threshold(
             x_test.reshape(-1, x.shape[2]), y_test.reshape(-1), label_type)
 
+        # train and predict
         clf.fit(x_train, y_train)
         y_pred = clf.predict(x_test)
 
+        # plot roc curve of each fold (subject)
+        probas_ = clf.predict_proba(x_test)  # shape: len x 2 (prob of neg, prob of pos)
+        fpr, tpr, _ = roc_curve(y_test, probas_[:, 1])
+        roc_auc = auc(fpr, tpr)
+        plt.plot(fpr, tpr, lw=1, alpha=0.3, label='ROC fold {} (AUC={:.2f})'.format(subject, roc_auc))
+
+        # be used to plot mean roc
+        tprs.append(interp(mean_fpr, fpr, tpr))  # append mean tpr (interp(mean_fpr, fpr, tpr))
+        tprs[-1][0] = 0.0  # mean_tpr[0] = 0
+        aucs.append(roc_auc)
+
+        # confusion matrix
         tn, fp, fn, tp = confusion_matrix(y_test, y_pred).ravel()
-        """
-            [[tn fp
-              fn tp]]
-        """
         precision = tp / (tp + fp)
         recall = tp / (tp + fn)
         f1 = 2 * (precision * recall) / (precision + recall)
@@ -146,9 +157,28 @@ def leave_one_subject_out(x, y, log, label_type):
     print('Average: Precision->{:.2f}, Recall->{:.2f}, F1->{:.2f}'.format(np.mean(precision_list),
                                                                           np.mean(recall_list), np.mean(f1_list)))
 
+    # plot mean auc
+    mean_tpr = np.mean(tprs, axis=0)
+    mean_tpr[-1] = 1.0
+    mean_auc = auc(mean_fpr, mean_tpr)
+    std_auc = np.std(aucs)
+    plt.plot(mean_fpr, mean_tpr, color='b', label=r'Mean ROC (AUC = %0.2f $\pm$ %0.2f)' %
+             (mean_auc, std_auc), lw=2, alpha=.8)
+
+    # plot chance level roc
+    plt.plot([0, 1], [0, 1], linestyle='--', lw=2, color='r', alpha=.8)  # plot chance level ROC
+
+    plt.show()
+
 
 def leave_one_trial_out(x, y, log, label_type):
-    pass
+    """Normalization and Leave one subject out cross validation
+
+    Args:
+        :param x: # people x # trials x (# channels x # features)
+        :param y: # people x # trials
+        :param log: (# channels x # features)
+    """
 
 
 def convert_to_binary_label_and_remove_threshold(x, y, label_type):
