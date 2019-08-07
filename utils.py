@@ -1,9 +1,10 @@
-import numpy as np
-from xgboost import XGBClassifier
-from sklearn.metrics import confusion_matrix, roc_curve, auc
 import matplotlib.pyplot as plt
+import numpy as np
+
 from scipy import interp
+from sklearn.metrics import auc, confusion_matrix, roc_curve
 from sklearn.utils import shuffle
+from xgboost import XGBClassifier
 
 CHANNEL_LIST = np.array(['FP1', 'FP2', 'F7', 'F3', 'FZ', 'F4', 'F8',
                          'FT7', 'FC3', 'FCZ', 'FC4', 'FT8', 'T7',

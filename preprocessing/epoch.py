@@ -3,11 +3,10 @@
     Merge all subjects' data in one file
 """
 import os
+import sys
 
 import numpy as np
 from tqdm import tqdm
-
-import sys
 
 USER_NPZ_PATH = '/mnt/SART_Paper/user_preprocessed_eeg_npz'  # save processed file
 EPOCH_PATH = '/mnt/SART_Paper/user_epoch_eeg_npz'  # save processed file

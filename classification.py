@@ -1,5 +1,6 @@
 from feature_extraction.feature_extraction import feature_extract
-from utils import remove_people_with_same_labels, specify_channels, leave_one_subject_out, leave_one_trial_out
+from utils import (leave_one_subject_out, leave_one_trial_out,
+                   remove_people_with_same_labels, specify_channels)
 
 ICA = False  # Use ICA or not
 BEFORE_PROBE = True  # epoch 10s eeg data before probe

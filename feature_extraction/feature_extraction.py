@@ -1,14 +1,16 @@
+import os
+
 import numpy as np
 from tqdm import tqdm
-import os
-from feature_extraction.utils import extract_one_feature_and_save
+
 import feature_extraction.feature_pool as fp
+from feature_extraction.utils import extract_one_feature_and_save
 
 EPOCH_PATH = '/home/access/cys/SART_Paper/user_epoch_eeg_npz'  # Load the epoch data
 FEATURE_PATH = '/home/access/cys/SART_Paper/feature_npz'  # saved feature path
 
 ICA = True  # Use ICA or not
-BEFORE_PROBE = True  # epoch 10s eeg data before probe
+BEFORE_PROBE = False  # epoch 10s eeg data before probe
 
 
 def feature_extract(use_ica: bool, before_probe: bool, label_type: str):
@@ -56,6 +58,7 @@ def feature_extract(use_ica: bool, before_probe: bool, label_type: str):
         x, sub_filename, 'WL-SpecEnt', fp.WLSpecralEntropy, 'wavelet_comp')
 
     mse, mse_log = extract_one_feature_and_save(x, sub_filename, 'MSE', fp.multiscale_entropy, 'entropy')
+    exit()
     mpe, mpe_log = extract_one_feature_and_save(x, sub_filename, 'MPE', fp.multiscale_permutation_entropy, 'entropy')
     mde, mde_log = extract_one_feature_and_save(x, sub_filename, 'MDE', fp.multiscale_dispersion_entropy, 'entropy')
     mfde, mfde_log = extract_one_feature_and_save(

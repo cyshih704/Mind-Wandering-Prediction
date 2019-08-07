@@ -1,7 +1,8 @@
 
-import numpy as np
 import os
+
 import matplotlib.pyplot as plt
+import numpy as np
 
 '''
     The file segment epoch and do the baseline correction

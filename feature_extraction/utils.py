@@ -1,6 +1,7 @@
 import os
-from tqdm import tqdm
+
 import numpy as np
+from tqdm import tqdm
 
 FEATURE_PATH = '/home/access/cys/SART_Paper/feature_npz'  # saved feature path
 
@@ -127,25 +128,3 @@ def wavelet_entropy_domain(x, function, feature_name):
             log.append('{}-{}-{}'.format(feature_name, comp, i+1))
 
     return feature, log
-
-
-'''
-def convert_to_binary_label(y, label_type):
-    """convert label to binary
-
-    Args:
-        y: # people x # trials
-        label_type: {'rating', 'thought', 'withhold'}
-    Returns:
-        binary y: # people x # trials
-    """
-    assert label_type in {'rating', 'thought', 'withhold'}
-
-    if label_type == 'rating':
-        y
-        print(y > 4)
-    elif label_type == 'thought':
-        raise NotImplementedError("Not implement convert thought to binary label yet")
-    else:
-        return y
-'''

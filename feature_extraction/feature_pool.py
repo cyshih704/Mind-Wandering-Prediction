@@ -1,10 +1,12 @@
-import scipy.signal as signal
-import numpy as np
-import pywt
-from scipy import stats
-from pyentrp import entropy as ent
-from scipy.stats import norm
 import math
+
+import numpy as np
+
+import pywt
+import scipy.signal as signal
+from pyentrp import entropy as ent
+from scipy import stats
+from scipy.stats import norm
 
 
 def psd(x, start_freq, end_freq, fs=1000.0):
