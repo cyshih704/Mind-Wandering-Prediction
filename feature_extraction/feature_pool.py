@@ -24,6 +24,7 @@ def psd(x, start_freq, end_freq, fs=1000.0):
     Return:
         the power spectral density of signal x
     """
+    # f: array of sample frequencies, Pxx: PSD of X
     f, Pxx = signal.periodogram(x, fs)  # Estimate power spectral density
 
     Pxx = Pxx / (np.sum(Pxx) + 1e-6)
@@ -54,6 +55,7 @@ def spectral_entropy(x, start_freq, end_freq, fs=1000.0):
     start_idx = np.argmin(np.abs(f - start_freq))
     end_idx = np.argmin(np.abs(f - end_freq))
     p = Pxx[start_idx:end_idx]
+
     return np.sum(p*np.log(p + 1e-6)) * -1
 
 
@@ -66,8 +68,7 @@ def STFT_se(x):
     Return:
         the mean spectral entropy of signal over time of signal x
     """
-    s_freq = 3.0
-    e_freq = 30.0
+
     f, t, Zxx = signal.stft(x, fs=1000.0, nperseg=125, nfft=5000)  # nperseg: time resolution, nfft: freq resolution
     Zxx = Zxx / np.sum(Zxx)  # Zxx: 2501 x 160, f: 2501, t: 160
 
@@ -80,26 +81,64 @@ def STFT_se(x):
         p = Ej / E
         se = np.sum(p*np.log(p+1e-6)) * -1
         se_list.append(se)
+
     return np.mean(se_list)
 
 
 def mean_power(x):
+    """Return the mean power of given signal
+
+    Args:
+        :param x: 1-dim list
+    Return:
+        the mean power of x
+    """
     return np.mean(np.square(x))
 
 
 def mean(x):
+    """Return the mean absolute value of given signal
+
+    Args:
+        :param x: 1-dim list
+    Return:
+        the mean absolute value of x
+    """
     return np.mean(np.abs(x))
 
 
 def std(x):
+    """Return the standard deviation of given signal
+
+    Args:
+        :param x: 1-dim list
+    Return:
+        the standard deviation of x
+    """
     return np.std(x)
 
 
 def first_diff(x):
+    """Return the mean value of first derivative of given signal
+
+    Args:
+        :param x: 1-dim list
+    Return:
+        the the mean value of first derivative of x
+    """
     return np.mean(np.abs(np.diff(x)))
 
 
 def hjcomp(x):
+    """Return the Hjorth complexity of given signal
+    # NOTE: https://en.wikipedia.org/wiki/Hjorth_parameters
+
+    Args:
+        : param x: 1-dim list
+    Return:
+        the the Hjorth complexity of x
+    """
+
     def _mob(x):
         return np.sqrt(np.var(np.diff(x))/np.var(x))
     return _mob(np.diff(x))/_mob(x)
@@ -116,10 +155,12 @@ def second_diff(x):
 """
 
 
-def WLMeanPower(x):
-    '''
+def wl_mean_power(x):
+    """Return the mean power of each sub-band ('cA7', 'cD7', 'cD6', 'cD5', 'cD4') using wavelet transform
+
         detail(h)     : from the high pass filter, output high freq part
         approximate(g): from the low  pass filter, output low  freq part -> can continue
+
         The signal have 32 sample,
         -------------------------------
         |Level|  Frequency  | Samples |
@@ -131,112 +172,167 @@ def WLMeanPower(x):
         -------------------------------
         |  1  |fn/2 to fn   |    16   |
         -------------------------------
+
+        If the sampling rate is 1000
         level = 7
         cD1: 250-500
         cD2: 125-250
         cD3: 62.5-125
         cD4: 31.25-62.5
-        cD5: 15.625-31.25 
+        cD5: 15.625-31.25
         cD6: 7.81-15.625  alpha
         cD7: 3.9-7.8  theta
         cA7: 0-3.9
-    '''
-    feature = []
+
+    Args:
+        :param x: 1-dim list
+    Return:
+        the mean power of x in each sub-band ('cA7', 'cD7', 'cD6', 'cD5', 'cD4') (returned type: list of float)
+    """
     list_coeffs = pywt.wavedec(x, 'sym10', level=7)
     list_coeffs = list_coeffs[0:5]
 
-    for coeff in list_coeffs:
-        power = np.mean(np.square(coeff))
-        feature.append(power)
+    feature = [np.mean(np.square(coeff)) for coeff in list_coeffs]
 
     return np.array(feature)
 
 
-def WLMean(x):
-    feature = []
+def wl_mean(x):
+    """Return the mean abs value of each sub-band ('cA7', 'cD7', 'cD6', 'cD5', 'cD4') using wavelet transform
+
+    Args:
+        :param x: 1-dim list
+    Return:
+        the mean abs value of x in each sub-band (returned type: list of float)
+    """
     list_coeffs = pywt.wavedec(x, 'sym10', level=7)
-    #list_coeffs = list_coeffs[2:5]
     list_coeffs = list_coeffs[0:5]
 
-    for coeff in list_coeffs:
-        AP = np.mean(np.abs(coeff))
-        feature.append(AP)
+    feature = [np.mean(np.abs(coeff)) for coeff in list_coeffs]
+
     return np.array(feature)
 
 
-def WLstd(x):
-    feature = []
+def wl_std(x):
+    """Return the standard deviation of each sub-band ('cA7', 'cD7', 'cD6', 'cD5', 'cD4') using wavelet transform
+
+    Args:
+        :param x: 1-dim list
+    Return:
+        the standard deviation of x in each sub-band (returned type: list of float)
+    """
     list_coeffs = pywt.wavedec(x, 'sym10', level=7)
-    #list_coeffs = list_coeffs[2:5]
     list_coeffs = list_coeffs[0:5]
 
-    for coeff in list_coeffs:
-        AP = np.std(coeff)
-        feature.append(AP)
+    feature = [np.std(coeff) for coeff in list_coeffs]
+
     return np.array(feature)
 
 
-def WLRAM(x):
-    feature = []
+def wl_ratio_of_subbands(x):
+    """Return the ratio of the abs mean values of adjacent sub-bands
+
+    Args:
+        :param x: 1-dim list
+    Return:
+        the ratio of the abs mean values of adjacent sub-bands (returned type: list of float)
+
+        ex: the first index of the return is the ratio of cA7 and cD7
+            the second index of the return is the ratio of cD7 and cD6
+    """
     list_coeffs = pywt.wavedec(x, 'sym10', level=7)
-    #list_coeffs = list_coeffs[2:5]
     list_coeffs = list_coeffs[0:5]
 
-    for i in range(len(list_coeffs)-1):
-        RAM = np.mean(np.abs(list_coeffs[i])) / np.mean(np.abs(list_coeffs[i + 1]))
-        feature.append(RAM)
+    feature = [np.mean(np.abs(list_coeffs[i])) / np.mean(np.abs(list_coeffs[i + 1])) for i in range(len(list_coeffs)-1)]
+
     return np.array(feature)
 
 
-def WLEntropy(x):
-    def _calculate_entropy(list_values):
-        bin_len = int(len(list_values)/5) if int(len(list_values)/5) > 0 else 2
-        hist, bin_edges = np.histogram(list_values, bins=bin_len)
-        #counter_values = Counter(list_values).most_common()
-        #probabilities = [elem[1]/len(list_values) for elem in counter_values]
-        probabilities = [elem/len(list_values) for elem in hist]
+def wl_entropy(x):
+    """Return the entropy of each sub-band ('cA7', 'cD7', 'cD6', 'cD5', 'cD4') using wavelet transform
+
+    Args:
+        :param x: 1-dim list
+    Return:
+        the entropy of x in each sub-band (returned type: list of float)
+    """
+    def _calculate_entropy(x):
+        """calculate the entropy of given signal
+
+        Args:
+            :param x: 1-dim list
+        Return:
+            the entropy of x
+        """
+        bin_len = int(len(x)/5) if int(len(x)/5) > 0 else 2
+        hist, bin_edges = np.histogram(x, bins=bin_len)
+        probabilities = [elem/len(x) for elem in hist]
         entropy = stats.entropy(probabilities)
         return entropy
-    feature = []
+
     list_coeffs = pywt.wavedec(x, 'sym10', level=7)
-    #list_coeffs = list_coeffs[2:5]
     list_coeffs = list_coeffs[0:5]
 
-    for coeff in list_coeffs:
-        entropy = _calculate_entropy(coeff)
-        feature.append(entropy)
+    feature = [_calculate_entropy(coeff) for coeff in list_coeffs]
+
     return np.array(feature)
 
 
-def WLSpecralEntropy(x):
-    def _spec_entropy(coeff):
-        Ej = np.abs(coeff)
+def wl_spec_entropy(x):
+    """Return the spectral entropy of each sub-band ('cA7', 'cD7', 'cD6', 'cD5', 'cD4') using wavelet transform
+
+    Args:
+        :param x: 1-dim list
+    Return:
+        the entropy of x in each sub-band (returned type: list of float)
+    """
+    def _spec_entropy(x):
+        """calculate the spectral entropy of given signal
+
+        Args:
+            :param x: 1-dim list
+        Return:
+            the spectral entropy of x
+        """
+        Ej = np.abs(x)
         E = np.sum(Ej)
         p = Ej / E
         return np.sum(p*np.log(p+1e-6)) * -1
 
-    feature = []
     list_coeffs = pywt.wavedec(x, 'sym10', level=7)
-    #print([len(coeff) for coeff in list_coeffs])
     list_coeffs = list_coeffs[0:5]
 
-    for coeff in list_coeffs:
-        entropy = _spec_entropy(coeff)
-        feature.append(entropy)
+    feature = [_spec_entropy(coeff) for coeff in list_coeffs]
+
     return np.array(feature)
 
 
 def multiscale_permutation_entropy(x, m=3, delay=1, scale=20):
+    """Return multiscale permutation entropy of the given signal
+
+    Args:
+        :param x: 1-dim list
+    Return:
+        the multiscale permutation entropy of x (returned type: list of float)
+    """
     return ent.multiscale_permutation_entropy(x, m=m, delay=delay, scale=scale)
 
 
 def multiscale_entropy(x, sample_length=2, maxscale=20):
+    """Return multiscale entropy of the given signal
+
+    Args:
+        :param x: 1-dim list
+    Return:
+        the multiscale entropy of x (returned type: list of float)
+    """
     return ent.multiscale_entropy(x, sample_length=sample_length, maxscale=maxscale)
 
 
 def coarse_graining(signal, scale):
     """Coarse-graining the signals.
-    Arguments:
+
+    Args:
         signal: original signal,
         scale: desired scale
     Return:
@@ -250,68 +346,77 @@ def coarse_graining(signal, scale):
     return new_signal
 
 
-def DispEn(x, d, m, c):
-    '''
-        d: delay
-        m: embedding dimension
-        c: number of class
-    '''
+def cal_dispersion_entropy(x, d, m, c):
+    """Calcuate the dispersion entropy of given signal
+    # NOTE: https://ieeexplore.ieee.org/document/7434608
+
+    Args:
+        :param x: signals (1-dim list or array)
+        :param d: delay
+        :param m: embedding dimension
+        :param c: the number of classes
+    Return:
+        the dispersion entropy of x
+    """
     y = norm.cdf(x, loc=np.mean(x), scale=np.std(x))
     z = np.round(c*y+0.5)
-    num_DispPattern = len(x) - (m - 1) * d
+
+    num_disp_pattern = len(x) - (m - 1) * d
     pattern_set = {}
-    for i in range(num_DispPattern):
+    for i in range(num_disp_pattern):
         pattern = ','.join([str(int(z[i:i+m][j])) for j in range(len(z[i:i+m]))])
         if pattern in pattern_set:
             pattern_set[pattern] += 1
         else:
             pattern_set[pattern] = 1
 
-    dispEn = 0
+    disp_entropy = 0
     for key, value in pattern_set.items():
-        prob = value / num_DispPattern
-        dispEn -= (prob) * math.log(prob)
+        prob = value / num_disp_pattern
+        disp_entropy -= (prob) * math.log(prob)
 
-    return dispEn
+    return disp_entropy
 
 
 def multiscale_dispersion_entropy(signal, maxscale=20, classes=6, emb_dim=3, delay=1):
-    """ Calculate multiscale dispersion entropy.
-    Arguments:
-        signal: input signal,
-        scale: coarse graining scale,
-        classes: number of classes,
-        emd_dim: embedding dimension,
-        delay: time delay
+    """Calculate multiscale dispersion entropy
+
+    Args:
+        :param signal: input signal,
+        :param scale: coarse graining scale,
+        :param classes: number of classes,
+        :param emd_dim: embedding dimension,
+        :param delay: time delay
     Return:
-        mde: multiscale dispersion entropy value of the signal
+        multiscale dispersion entropy value of the signal
     """
     mde = np.zeros(maxscale)
     for i in range(maxscale):
         cg_signal = coarse_graining(signal, i+1)
-        en = DispEn(cg_signal, d=delay, m=emb_dim, c=classes)
+        en = cal_dispersion_entropy(cg_signal, d=delay, m=emb_dim, c=classes)
         mde[i] = en
-
-        #cg_signal = coarse_graining(signal, scale)
-        #prob = dispersion_frequency(cg_signal, classes, emb_dim, delay)
-        #prob = list(filter(lambda p: p != 0., prob))
-        #mde = -1 * np.sum(prob * np.log(prob))
 
     return mde
 
 
-def FDispEn(x, d, m, c):
-    '''
-        d: delay
-        m: embedding dimension
-        c: number of class
-    '''
+def cal_fluctuation_dispersion_entropy(x, d, m, c):
+    """Calcuate the dispersion entropy of given signal
+    # NOTE: https://arxiv.org/pdf/1902.10825.pdf
+
+    Args:
+        :param x: signals (1-dim list or array)
+        :param d: delay
+        :param m: embedding dimension
+        :param c: the number of classes
+    Return:
+        the dispersion entropy of x
+    """
     y = norm.cdf(x, loc=np.mean(x), scale=np.std(x))
     z = np.round(c*y+0.5)
 
-    num_DispPattern = len(x) - (m - 1) * d
+    num_dispersion_pattern = len(x) - (m - 1) * d
     pattern_set = {}
-    for i in range(num_DispPattern):
+    for i in range(num_dispersion_pattern):
         pattern = ','.join([str(int(z[i:i+m][j]-np.min(z[i:i+m]))) for j in range(len(z[i:i+m]))])
 
         if pattern in pattern_set:
@@ -319,35 +424,44 @@ def FDispEn(x, d, m, c):
         else:
             pattern_set[pattern] = 1
 
-    dispEn = 0
+    fluctuation_dispersion_entropy = 0
     for key, value in pattern_set.items():
-        prob = value / num_DispPattern
-        dispEn -= (prob) * math.log(prob)
+        prob = value / num_dispersion_pattern
+        fluctuation_dispersion_entropy -= (prob) * math.log(prob)
 
-    return dispEn
+    return fluctuation_dispersion_entropy
 
 
 def multiscale_fluctuation_based_dispersion_entropy(signal, maxscale=20, classes=6, emb_dim=3, delay=1):
-    """ Calculate multiscale dispersion entropy.
-    Arguments:
-        signal: input signal,
-        scale: coarse graining scale,
-        classes: number of classes,
-        emd_dim: embedding dimension,
-        delay: time delay
+    """ Calculate multiscale fluctuation_based dispersion entropy.
+    # NOTE: https://arxiv.org/pdf/1902.10825.pdf
+
+    Args:
+        :param signal: input signal,
+        :param scale: coarse graining scale,
+        :param classes: number of classes,
+        :param emd_dim: embedding dimension,
+        :param delay: time delay
     Return:
-        mde: multiscale dispersion entropy value of the signal
+        mde: multiscale dispersion entropy value of the signal (list of float)
     """
     mfde = np.zeros(maxscale)
     for i in range(maxscale):
         cg_signal = coarse_graining(signal, i+1)
-        en = FDispEn(cg_signal, d=delay, m=emb_dim, c=classes)
+        en = cal_fluctuation_dispersion_entropy(cg_signal, d=delay, m=emb_dim, c=classes)
         mfde[i] = en
 
     return mfde
 
 
-def WLMPE(x):
+def wl_mpe(x):
+    """Return multiscale permutation entropy of each sub-band
+
+    Args:
+        :param x: 1-dim list
+    Return:
+        multiscale permutation entropy of each sub-band (returned type: list of float)
+    """
     feature = []
     list_coeffs = pywt.wavedec(x, 'sym10', level=7)
     list_coeffs = list_coeffs[0:5]
@@ -362,12 +476,22 @@ def WLMPE(x):
         else:
             c = 3
             m = 3
+
         entropy = multiscale_permutation_entropy(coeff, m=m, delay=1, scale=20)
         feature = feature + entropy
+
     return np.array(feature)
 
 
-def WLMDE(x):
+def wl_mde(x):
+    """Return multiscale dispersion entropy of each sub-band
+
+    Args:
+        :param x: 1-dim list
+    Return:
+        multiscale dispersion entropy of each sub-band (returned type: list of float)
+    """
+
     feature = []
     list_coeffs = pywt.wavedec(x, 'sym10', level=7)
     list_coeffs = list_coeffs[0:5]
@@ -384,10 +508,19 @@ def WLMDE(x):
             m = 3
         entropy = list(multiscale_dispersion_entropy(coeff, maxscale=20, classes=c, emb_dim=m, delay=1))
         feature = feature + entropy
+
     return np.array(feature)
 
 
-def WLMFDE(x):
+def wl_mfde(x):
+    """Return multiscale fluctuation-based dispersion entropy of each sub-band
+
+    Args:
+        :param x: 1-dim list
+    Return:
+        multiscale fluctuation-based dispersion entropy of each sub-band (returned type: list of float)
+    """
+
     feature = []
     list_coeffs = pywt.wavedec(x, 'sym10', level=7)
     list_coeffs = list_coeffs[0:5]

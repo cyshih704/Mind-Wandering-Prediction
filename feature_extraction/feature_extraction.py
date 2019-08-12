@@ -37,7 +37,6 @@ def feature_extract(use_ica: bool, before_probe: bool, label_type: str):
     y = data[label_type]
 
     psd, psd_log = extract_one_feature_and_save(x, sub_filename, 'PSD', fp.psd, 'freq_band')
-    """
     se, se_log = extract_one_feature_and_save(x, sub_filename, 'SpecEnt', fp.spectral_entropy, 'freq_band')
     stft_se, stft_se_log = extract_one_feature_and_save(x, sub_filename, 'STFT-SpecEnt', fp.STFT_se)
 
@@ -48,47 +47,47 @@ def feature_extract(use_ica: bool, before_probe: bool, label_type: str):
     # extract_one_feature_and_save(x, sub_filename, 'SecondDiff', fp.second_diff)
     hjcomp, hjcomp_log = extract_one_feature_and_save(x, sub_filename, 'HjComp', fp.hjcomp)
 
-    WLMeanPower, WLMeanPower_log = extract_one_feature_and_save(
-        x, sub_filename, 'WL-MeanPower', fp.WLMeanPower, 'wavelet_comp')
-    WLMean, WLMean_log = extract_one_feature_and_save(x, sub_filename, 'WL-Mean', fp.WLMean, 'wavelet_comp')
-    WLstd, WLstd_log = extract_one_feature_and_save(x, sub_filename, 'WL-STD', fp.WLstd, 'wavelet_comp')
-    WLRAM, WLRAM_log = extract_one_feature_and_save(x, sub_filename, 'WL-RAM', fp.WLMeanPower, 'wavelet_comp')
-    WLEntropy, WLEntropy_log = extract_one_feature_and_save(x, sub_filename, 'WL-Ent', fp.WLEntropy, 'wavelet_comp')
-    WLSpecralEntropy, WLSpecralEntropy_log = extract_one_feature_and_save(
-        x, sub_filename, 'WL-SpecEnt', fp.WLSpecralEntropy, 'wavelet_comp')
+    wl_mean_power, wl_mean_power_log = extract_one_feature_and_save(
+        x, sub_filename, 'WL-MeanPower', fp.wl_mean_power, 'wavelet_comp')
+    wl_mean, wl_mean_log = extract_one_feature_and_save(x, sub_filename, 'WL-Mean', fp.wl_mean, 'wavelet_comp')
+    wl_std, wl_std_log = extract_one_feature_and_save(x, sub_filename, 'WL-STD', fp.wl_std, 'wavelet_comp')
+    wl_ratio_of_subbands, wl_ratio_of_subbands_log = extract_one_feature_and_save(
+        x, sub_filename, 'WL-RAM', fp.wl_ratio_of_subbands, 'wavelet_comp')
+    wl_entropy, wl_entropy_log = extract_one_feature_and_save(x, sub_filename, 'WL-Ent', fp.wl_entropy, 'wavelet_comp')
+    wl_spec_entropy, wl_spec_entropy_log = extract_one_feature_and_save(
+        x, sub_filename, 'WL-SpecEnt', fp.wl_spec_entropy, 'wavelet_comp')
 
     mse, mse_log = extract_one_feature_and_save(x, sub_filename, 'MSE', fp.multiscale_entropy, 'entropy')
-    exit()
     mpe, mpe_log = extract_one_feature_and_save(x, sub_filename, 'MPE', fp.multiscale_permutation_entropy, 'entropy')
     mde, mde_log = extract_one_feature_and_save(x, sub_filename, 'MDE', fp.multiscale_dispersion_entropy, 'entropy')
     mfde, mfde_log = extract_one_feature_and_save(
         x, sub_filename, 'MFDE', fp.multiscale_fluctuation_based_dispersion_entropy, 'entropy')
 
-    WLMPE, WLMPE_log = extract_one_feature_and_save(x, sub_filename, 'WL-MPE', fp.WLMPE, 'wavelet_entropy')
-    WLMDE, WLMDE_log = extract_one_feature_and_save(x, sub_filename, 'WL-MDE', fp.WLMDE, 'wavelet_entropy')
-    WLMFDE, WLMFDE_log = extract_one_feature_and_save(x, sub_filename, 'WL-MFDE', fp.WLMFDE, 'wavelet_entropy')
+    wl_mpe, wl_mpe_log = extract_one_feature_and_save(x, sub_filename, 'WL-MPE', fp.wl_mpe, 'wavelet_entropy')
+    wl_mde, wl_mde_log = extract_one_feature_and_save(x, sub_filename, 'WL-MDE', fp.wl_mde, 'wavelet_entropy')
+    wl_mfde, wl_mfde_log = extract_one_feature_and_save(x, sub_filename, 'WL-MFDE', fp.wl_mfde, 'wavelet_entropy')
 
     time_feature = np.concatenate((mean, mean_power, std, first_diff, hjcomp), axis=3)
     time_feature_log = np.concatenate((mean_log, mean_power_log, std_log, first_diff_log, hjcomp_log), axis=0)
     freq_feature, freq_feature_log = psd, psd_log
-    wavelet_feature = np.concatenate((WLMeanPower, WLMean, WLstd, WLRAM), axis=3)
-    wavelet_feature_log = np.concatenate((WLMeanPower_log, WLMean_log, WLstd_log, WLRAM_log), axis=0)
+    wavelet_feature = np.concatenate((wl_mean_power, wl_mean, wl_std, wl_ratio_of_subbands), axis=3)
+    wavelet_feature_log = np.concatenate((wl_mean_power_log, wl_mean_log, wl_std_log, wl_ratio_of_subbands_log), axis=0)
 
     ent_feature_nomse = np.concatenate((mpe, mfde, mde), axis=3)
     ent_feature_nomse_log = np.concatenate((mpe_log, mfde_log, mde_log), axis=0)
     freq_ent_feature = np.concatenate((se, stft_se), axis=3)
     freq_ent_feature_log = np.concatenate((se_log, stft_se_log), axis=0)
-    wavelet_ent_feature = np.concatenate((WLMPE, WLMDE, WLMFDE, WLEntropy, WLSpecralEntropy), axis=3)
+    wavelet_ent_feature = np.concatenate((wl_mpe, wl_mde, wl_mfde, wl_entropy, wl_spec_entropy), axis=3)
     wavelet_ent_feature_log = np.concatenate(
-        (WLMPE_log, WLMDE_log, WLMFDE_log, WLEntropy_log, WLSpecralEntropy_log), axis=0)
+        (wl_mpe_log, wl_mde_log, wl_mfde_log, wl_entropy_log, wl_spec_entropy_log), axis=0)
 
     feature = np.concatenate((time_feature, freq_feature, wavelet_feature,
                               ent_feature_nomse, freq_ent_feature, wavelet_ent_feature), axis=3)
     feature_log = np.concatenate((time_feature_log, freq_feature_log,
                                   wavelet_feature_log, ent_feature_nomse_log, freq_ent_feature_log, wavelet_ent_feature_log), axis=0)
-    """
-    feature = psd
-    feature_log = psd_log
+
+    #feature = psd
+    #feature_log = psd_log
 
     return feature, y, feature_log
 
