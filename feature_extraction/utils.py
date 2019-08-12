@@ -67,6 +67,7 @@ def extract_one_feature_and_save(x, sub_dir: str, feature_name: str, function, e
 
         x = np.array(x_subject)
         log = np.array(log)
+
         assert x.shape[3] == len(log)
 
         np.savez(saved_file_path, x=x, log=np.array(log))
@@ -102,7 +103,7 @@ def time_domain(x, function, feature_name):
 
 
 def wavelet_domain(x, function, feature_name):
-    if feature_name == 'WLRAM':
+    if feature_name == 'WL-RAM':
         components = ['cA7cD7', 'cD7cD6', 'cD6cD6', 'cD5cD4']
     else:
         components = ['cA7', 'cD7', 'cD6', 'cD5', 'cD4']

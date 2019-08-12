@@ -9,8 +9,8 @@ from feature_extraction.utils import extract_one_feature_and_save
 EPOCH_PATH = '/home/access/cys/SART_Paper/user_epoch_eeg_npz'  # Load the epoch data
 FEATURE_PATH = '/home/access/cys/SART_Paper/feature_npz'  # saved feature path
 
-ICA = True  # Use ICA or not
-BEFORE_PROBE = False  # epoch 10s eeg data before probe
+ICA = False  # Use ICA or not
+BEFORE_PROBE = True  # epoch 10s eeg data before probe
 
 
 def feature_extract(use_ica: bool, before_probe: bool, label_type: str):
@@ -32,8 +32,8 @@ def feature_extract(use_ica: bool, before_probe: bool, label_type: str):
     data = np.load(os.path.join(EPOCH_PATH, 'main', '{}.npz'.format(sub_filename)))
 
     # keys of data: eeg, rating, thought, withhold, id_list
-    # x = data['eeg']
-    x = None
+    x = data['eeg']
+    # x = None
     y = data[label_type]
 
     psd, psd_log = extract_one_feature_and_save(x, sub_filename, 'PSD', fp.psd, 'freq_band')
