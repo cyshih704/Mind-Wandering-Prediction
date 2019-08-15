@@ -35,27 +35,19 @@ The subject id whose data can't be used: 11, 13, 22, 27, 36, 72
 ```
 python3 preprocess.py -p -ica
   -p Preprocess the raw data (Re-reference -> Bandpass filter)
-  -ica Remove eye artifact use ICA
+  -ica Remove eye artifact use ICA (ICA eye artifact rejection)
 ```
-* ONLY SUPPORT PREPROCESS NOW
+* ***ONLY SUPPORT PREPROCESS NOW***
 * If using ICA
   * Need to check the IC component index of eye blinking
-    * variable: **ICA_EXCLUDED_COMPONENTS**
+    * variable: **ICA_EXCLUDED_COMPONENTS** in the preprocess.py
 * **mode**
   * **main**: Save the npz file with keys (eeg, thought, response_time, rating, trigger)
   * **pre** or **post**: Save the npz file with keys (open_eeg, close_eeg)
 
-## Merge each subject data into one file
-* Variable: probe
-  * True: segment EEG data 10 seconds before the PROBE (saved to 10s_Dirty_seg_data)
-  * False: segment EEG data 10 secondes before the TARGET (saved to 10s_Dirty_seg_data_wC)
-* Variable: EEG_TYPE
-  * 'Dirty': not use ICA
-  * 'Clean': use ICA
-* Variable: id_list
-  * Subject id that will be merged
-* Variable ls
-  * Length of each segment (default 10 seconds)
+## Merge each subject's epoched data into one file
 ```
 python3 epoch.py
+  -bp epoch eeg data 10s before probe (TRUE), or epoch eeg data 10s before C appears (FALSE) in the main experiment
+  -ica Remove eye artifact use ICA
 ```
