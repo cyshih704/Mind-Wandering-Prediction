@@ -1,9 +1,9 @@
 ## To synchronize data
-Processing raw data to csv file and do the synchronization
+Processing raw data (in the **FORMAL_DATA_PATH**) to csv file and do the synchronization, save the file to **USER_CSV_PATH**
 ```
 python3 synchronize.py
 ```
-The output main csv file is be like as follows
+1. The output **main** csv file is be like as follows
 
 |TIMESTAMP|FP1|FP2|...|HEO|VEO|trigger|Rating|Rating_RT|Thought|
 |:----:|:----:|:----:|:----:|:----:|:----:|:----:|:----:|:----:|:----:|
@@ -11,15 +11,15 @@ The output main csv file is be like as follows
 | time stamp 2|...|...|...|...|...|...|...|...|...|
 | time stamp 3|...|...|...|...|...|...|...|...|...|
 
-* Type of **thought**
-  * normal
-  * probe
-  * response
-  * target
-* When the type of **thought** == target, the **response time, rating and trigger** will have value
+ * Type of **thought**
+   * normal
+   * probe
+   * response
+   * target
+ * When the type of **thought** == target, the **response time, rating and trigger** will have value
 
 
-The output rest csv file is be like as follows
+2. The output **rest** csv file is be like as follows
 
 |TIMESTAMP|FP1|FP2|...|HEO|VEO|trigger|
 |:----:|:----:|:----:|:----:|:----:|:----:|:----:|
