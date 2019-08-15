@@ -33,10 +33,14 @@ The subject id whose data can't be used: 11, 13, 22, 27, 36, 72
 ## Preprocessing of EEG 
 ### Re-reference -> Bandpass filter -> ICA eye artifact rejection (optional) -> Save to npz file
 ```
-python3 preprocess.py
+python3 preprocess.py -p -ica
+  -p Preprocess the raw data (Re-reference -> Bandpass filter)
+  -ica Remove eye artifact use ICA
 ```
+* ONLY SUPPORT PREPROCESS NOW
 * If using ICA
   * Need to check the IC component index of eye blinking
+    * variable: **ICA_EXCLUDED_COMPONENTS**
 * **mode**
   * **main**: Save the npz file with keys (eeg, thought, response_time, rating, trigger)
   * **pre** or **post**: Save the npz file with keys (open_eeg, close_eeg)
