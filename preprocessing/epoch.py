@@ -5,14 +5,14 @@
 import os
 import sys
 
+import argparse
 import numpy as np
 from tqdm import tqdm
 
-USER_NPZ_PATH = '/mnt/SART_Paper/user_preprocessed_eeg_npz'  # save processed file
-EPOCH_PATH = '/mnt/SART_Paper/user_epoch_eeg_npz'  # save processed file
-
-ICA = bool(int(sys.argv[1]))
-BEFORE_PROBE = bool(int(sys.argv[1]))  # if False, epoch eeg data before C appears, used in main experiment
+USER_NPZ_PATH = os.environ.get(
+    'USER_NPZ_PATH', '/home/access/cys/SART_Paper/user_preprocessed_eeg_npz')  # save processed file
+EPOCH_PATH = os.environ.get(
+    'EPOCH_PATH', '/home/access/cys/SART_Paper/user_epoch_eeg_npz')  # save processed file
 
 
 SAMPLE_FREQ = 1000
@@ -37,7 +37,7 @@ def check_success_with_hold(target_idx_list, target_resp_idx_list, trial_number)
     return with_hold
 
 
-def merge_epoch_data_main():
+def merge_epoch_data_main(ICA, BEFORE_PROBE):
     """Epoch eeg data and proccess label, merge data of all subjects into one file
 
     keys of npz file
@@ -98,7 +98,7 @@ def merge_epoch_data_main():
              thought=thought_people, withhold=withhold_people, id_list=id_people)
 
 
-def merge_data_rest(mode):
+def merge_data_rest(mode, ICA):
     sub_dir = 'ica' if ICA else 'noica'
     file_name_list = sorted(os.listdir(os.path.join(USER_NPZ_PATH, sub_dir, mode)))
 
@@ -121,11 +121,28 @@ def merge_data_rest(mode):
              open_eeg=open_eeg_people, id_list=id_list)
 
 
-def main():
-    merge_epoch_data_main()
-    # merge_data_rest(mode='pre')
-    # merge_data_rest(mode='post')
+def main(args):
+    if args.before_probe:
+        print('Epoch eeg data before probe')
+    else:
+        print('Epoch eeg data before C appears')
+
+    if args.ica:
+        print('Using ICA to remove eye artifact')
+    else:
+        print('Not using ICA to remove eye artifact')
+
+    merge_epoch_data_main(ICA=args.ica, BEFORE_PROBE=args.before_probe)
+    # merge_data_rest(mode='pre', ICA=args.ica)
+    # merge_data_rest(mode='post', ICA=args.ica)
 
 
 if __name__ == '__main__':
-    main()
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-bp", "--before_probe", help="epoch eeg data before probe (TRUE), or epoch eeg data before C appears (FALSE) in the main experiment",
+                        action="store_true")
+    parser.add_argument("-ica", "--ica", help="remove eye artifact use ICA",
+                        action="store_true")
+    args = parser.parse_args()
+
+    main(args)

@@ -7,8 +7,8 @@ import os
 import pandas as pd
 from tqdm import tqdm
 
-FORMAL_DATA_PATH = '/mnt/SART_Paper/Formal_data'
-USER_CSV_PATH = '/mnt/SART_Paper/user_eeg_csv'
+FORMAL_DATA_PATH = os.environ.get('FORMAL_DATA_PATH', '/home/access/cys/SART_Paper/Formal_data')
+USER_CSV_PATH = os.environ.get('USER_CSV_PATH', '/home/access/cys/SART_Paper/user_eeg_csv')
 
 
 def parse_data(eeg_text):

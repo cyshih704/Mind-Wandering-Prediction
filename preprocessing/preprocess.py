@@ -4,6 +4,7 @@
 import os
 import sys
 
+import argparse
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
@@ -12,11 +13,10 @@ from tqdm import tqdm
 import mne
 from scipy.signal import butter, lfilter
 
-USER_CSV_PATH = '/mnt/SART_Paper/user_eeg_csv'  # reading raw csv file
-USER_NPZ_PATH = '/mnt/SART_Paper/user_preprocessed_eeg_npz'  # save processed file
+USER_CSV_PATH = os.environ.get('USER_CSV_PATH', '/home/access/cys/SART_Paper/user_eeg_csv')  # reading raw csv file
+USER_NPZ_PATH = os.environ.get(
+    'USER_NPZ_PATH', '/home/access/cys/SART_Paper/user_preprocessed_eeg_npz')  # save processed file
 
-PREPROCESSING = True
-ICA = True
 
 # Channel list with M2 channel
 CHANNEL_LIST_WITH_M2 = np.array(['FP1', 'FP2', 'F7', 'F3', 'FZ', 'F4', 'F8',
@@ -133,7 +133,7 @@ def ica_remove_eye_artifact(eeg, saved_file_name):
     return ret
 
 
-def preprocess_and_save(mode):
+def preprocess_and_save(mode, PREPROCESSING, ICA):
     """Processed raw csv file to npz format, and do the preprocessing,
     read the file from USER_CSV_PATH and save to USER_NPZ_PATH
 
@@ -145,6 +145,18 @@ def preprocess_and_save(mode):
             'pre': the recording of pre resting
             'post': the recording of post resting
     """
+    print('Processing the {} file'.format(mode))
+
+    if PREPROCESSING:
+        print('    Preprocessing the raw EEG data')
+    else:
+        print('    Not preprocessing the raw EEG data')
+
+    if ICA:
+        print('    Using ICA to remove eye artifact')
+    else:
+        print('    Not using ICA to remove eye artifact')
+
     file_dir = os.path.join(USER_CSV_PATH, mode)
     file_names = sorted(os.listdir(file_dir))
 
@@ -213,16 +225,23 @@ def preprocess_and_save(mode):
             np.savez(saved_file_path, open_eeg=open_eeg, close_eeg=close_eeg)
 
 
-def main():
+def main(args):
     """
         main function
     """
-    assert PREPROCESSING == True
+    assert args.preprocessing == True
 
-    preprocess_and_save('main')
-    preprocess_and_save('post')
-    preprocess_and_save('pre')
+    preprocess_and_save('main', PREPROCESSING=args.preprocessing, ICA=args.ica)
+    preprocess_and_save('post', PREPROCESSING=args.preprocessing, ICA=args.ica)
+    preprocess_and_save('pre', PREPROCESSING=args.preprocessing, ICA=args.ica)
 
 
 if __name__ == '__main__':
-    main()
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-p", "--preprocessing", help="do the preprocessing",
+                        action="store_true")
+    parser.add_argument("-ica", "--ica", help="remove eye artifact use ICA",
+                        action="store_true")
+    args = parser.parse_args()
+
+    main(args)
