@@ -1,16 +1,15 @@
 import os
+import argparse
 
 import numpy as np
-from tqdm import tqdm
 
 import feature_extraction.feature_pool as fp
 from feature_extraction.utils import extract_one_feature_and_save
 
-EPOCH_PATH = '/home/access/cys/SART_Paper/user_epoch_eeg_npz'  # Load the epoch data
-FEATURE_PATH = '/home/access/cys/SART_Paper/feature_npz'  # saved feature path
+EPOCH_PATH = os.environ.get(
+    'EPOCH_PATH', '/home/access/cys/SART_Paper/user_epoch_eeg_npz')  # save processed file
 
-ICA = False  # Use ICA or not
-BEFORE_PROBE = True  # epoch 10s eeg data before probe
+FEATURE_PATH = os.environ.get('FEATURE_PATH', '/home/access/cys/SART_Paper/feature_npz')  # saved feature path
 
 
 def feature_extract(use_ica: bool, before_probe: bool, label_type: str):
@@ -93,4 +92,11 @@ def feature_extract(use_ica: bool, before_probe: bool, label_type: str):
 
 
 if __name__ == "__main__":
-    feature_extract(use_ica=ICA, before_probe=BEFORE_PROBE, label_type='rating')
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-bp", "--before_probe", help="epoch eeg data before probe (TRUE), or epoch eeg data before C appears (FALSE) in the main experiment",
+                        action="store_true")
+    parser.add_argument("-ica", "--ica", help="remove eye artifact use ICA",
+                        action="store_true")
+    args = parser.parse_args()
+
+    feature_extract(use_ica=args.ica, before_probe=args.before_probe, label_type='rating')
