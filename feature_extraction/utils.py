@@ -109,7 +109,7 @@ def wavelet_domain(x, function, feature_name):
         components = ['cA7', 'cD7', 'cD6', 'cD5', 'cD4']
 
     feature = function(x)
-    log = ['{}-{}'.format(comp, feature_name) for comp in components]
+    log = ['{}-{}'.format(feature_name, comp) for comp in components]
     return feature, log
 
 
