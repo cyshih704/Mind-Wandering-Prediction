@@ -14,7 +14,7 @@ def extract_one_feature_and_save(x, sub_dir: str, feature_name: str, function, e
         :param sub_dir: the sub directory of the path of saved feature
         :param feature_name: the saved feature name
         :param function: the feature extract function
-        :extract type: be used to saved feature log
+        :extract type: be used to save the log of feature
             freq_band: feature extraction on 4 frequency band (4 bands)
             wavelet_comp: feature extraction on each wavelet components (5 components)
             entropy: feature extraction on different entropy scale (20 scales)
