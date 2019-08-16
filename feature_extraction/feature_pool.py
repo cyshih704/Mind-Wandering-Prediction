@@ -329,19 +329,19 @@ def multiscale_entropy(x, sample_length=2, maxscale=20):
     return ent.multiscale_entropy(x, sample_length=sample_length, maxscale=maxscale)
 
 
-def coarse_graining(signal, scale):
+def coarse_graining(org_signal, scale):
     """Coarse-graining the signals.
 
     Args:
-        signal: original signal,
+        org_signal: original signal,
         scale: desired scale
     Return:
         new_signal: coarse-grained signal
     """
-    new_length = int(np.fix(len(signal) / scale))
+    new_length = int(np.fix(len(org_signal) / scale))
     new_signal = np.zeros(new_length)
     for i in range(new_length):
-        new_signal[i] = np.mean(signal[i * scale:(i + 1) * scale])
+        new_signal[i] = np.mean(org_signal[i * scale:(i + 1) * scale])
 
     return new_signal
 
@@ -471,8 +471,8 @@ def wl_mpe(x):
             c = 2
             m = 2
         elif i == 1:
-            m = 2
             c = 3
+            m = 2
         else:
             c = 3
             m = 3
